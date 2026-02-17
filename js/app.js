@@ -117,12 +117,14 @@ function escAttr(s) { return s ? s.replace(/'/g, "\\'").replace(/"/g, '&quot;') 
 
 function trackHTML(t) {
     return `<div class="track-item" id="track-${t.id}">
-    <div class="track-clickable" onclick="openTrackDetail('${t.id}')">
+    <div class="track-cover-container" onclick="openTrackDetail('${t.id}')">
       <img class="track-cover" src="${t.cover_url || ''}" alt="${escAttr(t.title)}">
     </div>
-    <div class="track-info track-clickable" onclick="openTrackDetail('${t.id}')">
-      <div class="track-title">${t.title}</div>
-      <div class="track-genre">${t.genre || ''}</div>
+    <div class="track-info">
+      <div class="track-title-wrapper" onclick="openTrackDetail('${t.id}')">
+        <div class="track-title">${t.title}</div>
+        <div class="track-genre">${t.genre || ''}</div>
+      </div>
     </div>
     <span class="track-bpm">${t.bpm ? t.bpm + ' BPM' : ''}</span>
     <button class="track-play-btn" onclick="event.stopPropagation();playTrackOnly('${t.id}')">▶</button>
@@ -176,7 +178,7 @@ function generateWaveformBars() {
     wf.innerHTML = bars;
 }
 
-async function openTrackDetail(id) {
+async function openTrackDetail(id, autoplay = true) {
     let t = trackCache[id];
     // If not cached, fetch from DB
     if (!t) {
@@ -214,9 +216,9 @@ async function openTrackDetail(id) {
     // Hide mini-player while modal is open
     nowPlayingBar.classList.remove('active');
 
-    // Start playing
-    startAudio(t, document.getElementById('track-' + id), true);
-    coverImg.classList.add('playing-anim');
+    // Start playing (or just load if autoplay is false)
+    startAudio(t, document.getElementById('track-' + id), true, autoplay);
+    if (autoplay) coverImg.classList.add('playing-anim');
 }
 
 function closeTrackDetail() {
@@ -277,7 +279,7 @@ function copyTrackLink(id) {
 // ====================================================
 // UNIFIED AUDIO ENGINE
 // ====================================================
-function startAudio(track, trackEl, openModal) {
+function startAudio(track, trackEl, openModal, autoplay = true) {
     const npCover = document.getElementById('np-cover');
     const npTitle = document.getElementById('np-title');
     const npFill = document.getElementById('np-fill');
@@ -288,7 +290,7 @@ function startAudio(track, trackEl, openModal) {
     // Same track? Toggle play/pause
     if (currentTrackId === track.id && currentAudio) {
         if (currentAudio.paused) {
-            currentAudio.play();
+            currentAudio.play().catch(e => console.log("Play blocked"));
             syncPlayState(true);
         } else {
             currentAudio.pause();
@@ -322,9 +324,17 @@ function startAudio(track, trackEl, openModal) {
         nowPlayingBar.classList.add('active');
     }
 
-    syncPlayState(true);
-
-    currentAudio.play().catch(e => { console.error(e); showToast('Ses çalınamadı', 'error'); });
+    if (autoplay) {
+        currentAudio.play().then(() => {
+            syncPlayState(true);
+        }).catch(e => {
+            console.warn("Autoplay blocked:", e);
+            syncPlayState(false);
+            showToast('Oynatmak için basınız', 'info');
+        });
+    } else {
+        syncPlayState(false);
+    }
 
     // Time updates — sync both mini-player AND modal
     currentAudio.addEventListener('timeupdate', () => {
@@ -405,7 +415,7 @@ async function checkTrackParam() {
     const trackId = params.get('track');
     if (!trackId) return;
     // Small delay to let page initialize
-    setTimeout(() => { openTrackDetail(trackId); }, 600);
+    setTimeout(() => { openTrackDetail(trackId, false); }, 600);
 }
 
 // ---- INIT ----
@@ -461,17 +471,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const volSlider = document.getElementById('np-volume');
     const volBtn = document.getElementById('np-vol-btn');
     if (volSlider) volSlider.addEventListener('input', () => {
-        if (currentAudio) currentAudio.volume = parseFloat(volSlider.value);
-        if (volBtn) volBtn.textContent = parseFloat(volSlider.value) === 0 ? '🔇' : '🔊';
+        const val = parseFloat(volSlider.value);
+        if (currentAudio) currentAudio.volume = val;
+        if (volBtn) {
+            volBtn.classList.toggle('muted', val === 0);
+        }
     });
+
     if (volBtn) volBtn.addEventListener('click', () => {
         if (!currentAudio) return;
         if (currentAudio.volume > 0) {
             volBtn.dataset.prev = currentAudio.volume;
-            currentAudio.volume = 0; volSlider.value = 0; volBtn.textContent = '🔇';
+            currentAudio.volume = 0;
+            volSlider.value = 0;
+            volBtn.classList.add('muted');
         } else {
-            currentAudio.volume = parseFloat(volBtn.dataset.prev || 1);
-            volSlider.value = currentAudio.volume; volBtn.textContent = '🔊';
+            const prev = parseFloat(volBtn.dataset.prev || 1);
+            currentAudio.volume = prev;
+            volSlider.value = prev;
+            volBtn.classList.remove('muted');
         }
     });
 
