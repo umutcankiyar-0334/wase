@@ -227,6 +227,34 @@
         </div>
     </div>
 
+    <!-- ==================== TRACK DETAIL MODAL ==================== -->
+    <div class="track-modal" id="track-modal">
+        <div class="tm-bg" id="tm-bg"></div>
+        <div class="tm-controls">
+            <button class="tm-ctrl" id="tm-minimize" title="Küçült">_</button>
+            <button class="tm-ctrl x-btn" id="tm-close" title="Kapat">✕</button>
+        </div>
+        <div class="tm-content">
+            <img class="tm-cover" id="tm-cover-img" src="" alt="">
+            <div class="tm-info">
+                <div class="tm-title" id="tm-title-text"></div>
+                <div class="tm-meta" id="tm-meta-text"></div>
+            </div>
+            <div class="tm-waveform" id="tm-waveform"></div>
+            <div class="tm-prog-wrap">
+                <span class="tm-time" id="tm-cur">0:00</span>
+                <div class="tm-prog" id="tm-prog-bar">
+                    <div class="tm-prog-fill" id="tm-prog-fill"></div>
+                </div>
+                <span class="tm-time" id="tm-dur">0:00</span>
+            </div>
+            <div class="tm-player-controls">
+                <button class="tm-play-btn" id="tm-play">⏸</button>
+            </div>
+            <button class="tm-share" id="tm-share">🔗 Bağlantıyı Kopyala</button>
+        </div>
+    </div>
+
     <!-- LIGHTBOX -->
     <div class="lightbox" id="lightbox">
         <button class="lightbox-close">✕</button>
@@ -247,26 +275,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
-    <script>
-        function copyEmail() {
-            const email = "umutcankiyar@gmail.com";
-            const linkElement = document.getElementById('email-copy');
-
-            // Panoya kopyalama işlemi
-            navigator.clipboard.writeText(email).then(() => {
-                // Kullanıcıya geri bildirim veriyoruz
-                const originalText = "✉ " + email;
-                linkElement.innerText = "✓ Kopyalandı";
-
-                // 2 saniye sonra eski haline geri dönsün
-                setTimeout(() => {
-                    linkElement.innerText = originalText;
-                }, 2000);
-            }).catch(err => {
-                console.error('Kopyalama başarısız:', err);
-            });
-        }
-    </script>
 </body>
 
 </html>
