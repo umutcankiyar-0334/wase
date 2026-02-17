@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Underground Vibe — Admin Paneli. İçerik yönetimi.">
+    <title>Underground Vibe — Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- ===== LOGIN EKRANI ===== -->
+    <div class="login-container" id="login-screen">
+        <div class="login-box">
+            <div class="login-title">UNDERGND_ADMIN</div>
+            <div class="login-subtitle">Kontrol merkezine giriş yap</div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">E-posta</label>
+                    <input class="form-input" type="email" id="login-email" placeholder="admin@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Şifre</label>
+                    <input class="form-input" type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;margin-top:8px;">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN PANELİ ===== -->
+    <div class="admin-wrapper" id="admin-panel" style="display:none;">
+        <div class="container">
+
+            <!-- Header -->
+            <div class="admin-header">
+                <div>
+                    <span class="section-tag">// Kontrol Merkezi</span>
+                    <h1 class="section-title">Admin Panel</h1>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center;">
+                    <a href="index.html" class="btn btn-secondary btn-small">← Siteye Dön</a>
+                    <button class="btn btn-danger btn-small" onclick="adminLogout()">Çıkış</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs" id="admin-tabs">
+                <button class="admin-tab active" data-tab="music">🎵 Müzik</button>
+                <button class="admin-tab" data-tab="images">📸 Görseller</button>
+                <button class="admin-tab" data-tab="notes">📝 Notlar</button>
+            </div>
+
+            <!-- ===== MÜZİK BÖLÜMÜ ===== -->
+            <div class="admin-section active" id="section-music">
+                <div class="card" style="padding:24px;margin-bottom:32px;">
+                    <h3 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Yeni Müzik Ekle</h3>
+                    <form id="music-form">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label" for="music-title">Başlık *</label>
+                                <input class="form-input" type="text" id="music-title" placeholder="Parça adı" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="music-genre">Tür</label>
+                                <input class="form-input" type="text" id="music-genre"
+                                    placeholder="Hip-Hop, Trap, Lo-fi...">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="music-bpm">BPM</label>
+                            <input class="form-input" type="number" id="music-bpm" placeholder="140">
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Kapak Görseli</label>
+                                <input class="form-file" type="file" id="music-cover" accept="image/*">
+                                <label class="form-file-label" for="music-cover" id="music-cover-label">
+                                    📷 Kapak Görseli Seç
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ses Dosyası *</label>
+                                <input class="form-file" type="file" id="music-audio" accept="audio/*" required>
+                                <label class="form-file-label" for="music-audio" id="music-audio-label">
+                                    🎵 Ses Dosyası Seç
+                                </label>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="music-submit">Müzik Ekle</button>
+                    </form>
+                </div>
+
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Mevcut Müzikler</h3>
+                <div id="music-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Kapak</th>
+                                <th>Başlık</th>
+                                <th>BPM</th>
+                                <th>Tür</th>
+                                <th>Tarih</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="music-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== GÖRSEL BÖLÜMÜ ===== -->
+            <div class="admin-section" id="section-images">
+                <div class="card" style="padding:24px;margin-bottom:32px;">
+                    <h3 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Yeni Görsel Ekle</h3>
+                    <form id="image-form">
+                        <div class="form-group">
+                            <label class="form-label" for="image-title">Başlık *</label>
+                            <input class="form-input" type="text" id="image-title" placeholder="Görsel başlığı"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="image-desc">Açıklama</label>
+                            <textarea class="form-textarea" id="image-desc"
+                                placeholder="Kısa bir açıklama..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Görsel Dosyası *</label>
+                            <input class="form-file" type="file" id="image-file" accept="image/*" required>
+                            <label class="form-file-label" for="image-file" id="image-file-label">
+                                📷 Görsel Seç
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="image-submit">Görsel Ekle</button>
+                    </form>
+                </div>
+
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Mevcut Görseller</h3>
+                <div id="images-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Önizleme</th>
+                                <th>Başlık</th>
+                                <th>Açıklama</th>
+                                <th>Tarih</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="images-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== NOT BÖLÜMÜ ===== -->
+            <div class="admin-section" id="section-notes">
+                <div class="card" style="padding:24px;margin-bottom:32px;">
+                    <h3 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Yeni Not Ekle</h3>
+                    <form id="note-form">
+                        <div class="form-group">
+                            <label class="form-label" for="note-title">Başlık *</label>
+                            <input class="form-input" type="text" id="note-title" placeholder="Not başlığı" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="note-content">İçerik *</label>
+                            <textarea class="form-textarea" id="note-content" placeholder="Düşüncelerini yaz..."
+                                required style="min-height:200px;"></textarea>
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="note-submit">Not Ekle</button>
+                    </form>
+                </div>
+
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Mevcut Notlar</h3>
+                <div id="notes-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Başlık</th>
+                                <th>İçerik</th>
+                                <th>Tarih</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notes-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/admin.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+
+            const loginScreen = document.getElementById('login-screen');
+            const adminPanel = document.getElementById('admin-panel');
+
+            // Oturum kontrolü
+            const isAuth = await checkAdminAuth();
+
+            if (isAuth) {
+                loginScreen.style.display = 'none';
+                adminPanel.style.display = 'block';
+                initAdminTabs();
+                loadAdminMusic();
+            }
+
+            // ---- Login Form ----
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                const success = await adminLogin(email, password);
+                if (success) {
+                    loginScreen.style.display = 'none';
+                    adminPanel.style.display = 'block';
+                    initAdminTabs();
+                    loadAdminMusic();
+                }
+            });
+
+            // ---- Dosya seçim etiketlerini güncelle ----
+            function setupFileLabel(inputId, labelId) {
+                const input = document.getElementById(inputId);
+                const label = document.getElementById(labelId);
+                if (input && label) {
+                    input.addEventListener('change', () => {
+                        if (input.files.length > 0) {
+                            label.textContent = '✅ ' + input.files[0].name;
+                            label.style.borderColor = 'var(--neon-green)';
+                            label.style.color = 'var(--neon-green)';
+                        }
+                    });
+                }
+            }
+
+            setupFileLabel('music-cover', 'music-cover-label');
+            setupFileLabel('music-audio', 'music-audio-label');
+            setupFileLabel('image-file', 'image-file-label');
+
+            // ---- Müzik Form ----
+            document.getElementById('music-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById('music-submit');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Yükleniyor...';
+
+                await addMusic({
+                    title: document.getElementById('music-title').value,
+                    genre: document.getElementById('music-genre').value,
+                    bpm: document.getElementById('music-bpm').value,
+                    coverFile: document.getElementById('music-cover').files[0],
+                    audioFile: document.getElementById('music-audio').files[0]
+                });
+
+                e.target.reset();
+                document.getElementById('music-cover-label').textContent = '📷 Kapak Görseli Seç';
+                document.getElementById('music-cover-label').style.borderColor = '';
+                document.getElementById('music-cover-label').style.color = '';
+                document.getElementById('music-audio-label').textContent = '🎵 Ses Dosyası Seç';
+                document.getElementById('music-audio-label').style.borderColor = '';
+                document.getElementById('music-audio-label').style.color = '';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Müzik Ekle';
+            });
+
+            // ---- Görsel Form ----
+            document.getElementById('image-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById('image-submit');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Yükleniyor...';
+
+                await addImage({
+                    title: document.getElementById('image-title').value,
+                    description: document.getElementById('image-desc').value,
+                    imageFile: document.getElementById('image-file').files[0]
+                });
+
+                e.target.reset();
+                document.getElementById('image-file-label').textContent = '📷 Görsel Seç';
+                document.getElementById('image-file-label').style.borderColor = '';
+                document.getElementById('image-file-label').style.color = '';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Görsel Ekle';
+            });
+
+            // ---- Not Form ----
+            document.getElementById('note-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById('note-submit');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Ekleniyor...';
+
+                await addNote({
+                    title: document.getElementById('note-title').value,
+                    content: document.getElementById('note-content').value
+                });
+
+                e.target.reset();
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Not Ekle';
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>

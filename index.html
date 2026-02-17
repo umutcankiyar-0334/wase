@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="wase — Müzik, görsel ve düşünceler. Underground vibe.">
+    <title>wase — underground vibe</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <a class="nav-logo" onclick="navigateTo('home')">
+            <span class="logo-main">wase</span>
+            <span class="logo-sep">//</span>
+            <span class="logo-tag">UNDERGND</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+            <a data-page="home" class="active">Ana Sayfa</a>
+            <a data-page="music">Müzik</a>
+            <a data-page="gallery">Galeri</a>
+            <a data-page="notes">Notlar</a>
+            <a data-page="about">Hakkımda</a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <!-- ==================== PAGES ==================== -->
+
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+        <div class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    dünyaya <span class="accent glitch" data-text="wase">wase</span><br>
+                    gibi bakmak için
+                </h1>
+                <p class="hero-subtitle">
+                    Müziğim, gözümün gördüğü ve zihnimin susturamadıkları... ham ve eksik, olduğu gibi.
+                </p>
+                <div class="hero-actions">
+                    <a onclick="navigateTo('music')" class="btn btn-primary">▶ Müzikleri Keşfet</a>
+                    <a onclick="navigateTo('about')" class="btn btn-secondary">Artisti Tanı</a>
+                </div>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="container">
+                <div style="margin-bottom:48px">
+                    <div class="sub-label">🎵 Son Müzikler</div>
+                    <div class="track-list" id="latest-music">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-bottom:48px">
+                    <div class="sub-label">📸 Son Görseller</div>
+                    <div class="gallery-grid" id="latest-images">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="sub-label">📝 Son Notlar</div>
+                    <div class="notes-grid" id="latest-notes">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <!-- MUSIC -->
+    <section id="page-music" class="page">
+        <div class="page-wrapper">
+            <section class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <span class="section-tag">// Müzik Arşivi</span>
+                        <h1 class="section-title">Tüm Parçalar</h1>
+                        <p class="section-desc">Karanlıktan süzülen sesler. Çal, hisset, kaybol.</p>
+                    </div>
+                    <div class="spotify-bar">
+                        <span class="spotify-bar-text">🎧 Benim Dinlediklerim</span>
+                        <a href="https://open.spotify.com/playlist/SENIN_PLAYLIST_ID" target="_blank"
+                            class="btn btn-spotify btn-small">Spotify'da Aç</a>
+                    </div>
+                    <div class="track-list" id="all-tracks">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="page-gallery" class="page">
+        <div class="page-wrapper">
+            <section class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <span class="section-tag">// Görsel Arşiv</span>
+                        <h1 class="section-title">Galeri</h1>
+                        <p class="section-desc">Her kare bir hikaye anlatır. Karanlık tonlar, ham duygular.</p>
+                    </div>
+                    <div class="gallery-grid" id="all-images">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- NOTES -->
+    <section id="page-notes" class="page">
+        <div class="page-wrapper">
+            <section class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <span class="section-tag">// Düşünceler</span>
+                        <h1 class="section-title">Notlar</h1>
+                        <p class="section-desc">Filtresiz düşünceler, ham fikirler, yeraltından satırlar.</p>
+                    </div>
+                    <div class="notes-grid" id="all-notes">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="page-about" class="page">
+        <div class="page-wrapper">
+            <section class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <span class="section-tag">// Kim Bu?</span>
+                        <h1 class="section-title">WASE</h1>
+                    </div>
+                    <div class="about-layout">
+                        <div class="about-image-wrapper">
+                            <img class="about-image" id="about-image" src="covers/about.jpg" alt="wase">
+                        </div>
+                        <div class="about-text">
+                            <h2>Umut Can<br> KIYAR</h2>
+                            <p>
+                                Cilalı görsellerden ve ruhsuz ritimlerden bıktığım için buradayım. Burası benim
+                                yeraltım;
+                                kendi sesimi, çizgimi ve düşüncelerimi saklamadan paylaştığım bir alan.
+                                Yarattığım her şey; sokağın gürültüsünden, uykusuz gecelerden ve filtrelenmemiş
+                                gerçeklikten
+                                süzüldü. Müziklerimdeki pürüzleri veya notlarımdaki o hamlığı temizlemeye çalışmıyorum;
+                                çünkü gerçek olanın o olduğuna inanıyorum.
+                            </p>
+                            <p>Arayışın benzerse hoş geldin, değilsen hoşça kal.</p>
+
+                            <div class="social-links">
+                                <a href="javascript:void(0)" class="social-link" id="email-copy" onclick="copyEmail()">
+                                    ✉ umutcankiyar@gmail.com
+                                </a>
+                                <a href="https://www.instagram.com/oculicaligant/" class="social-link" target="_blank">
+                                    📷 Instagram
+                                </a>
+                            </div>
+
+                            <div class="about-stats" id="about-stats">
+                                <div class="stat-item">
+                                    <div class="stat-number" id="stat-music">—</div>
+                                    <div class="stat-label">Parça</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number" id="stat-images">—</div>
+                                    <div class="stat-label">Görsel</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number" id="stat-notes">—</div>
+                                    <div class="stat-label">Not</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- ==================== NOW PLAYING BAR ==================== -->
+    <div class="now-playing" id="now-playing">
+        <div class="now-playing-inner">
+            <div class="np-left">
+                <img class="np-cover" src="" alt="" id="np-cover">
+                <span class="np-title" id="np-title">—</span>
+            </div>
+            <div class="np-center">
+                <button class="np-btn" id="np-play-pause">⏸</button>
+                <div class="progress-wrap">
+                    <span class="progress-time" id="np-current">0:00</span>
+                    <div class="progress-bar" id="np-progress">
+                        <div class="progress-fill" id="np-fill"></div>
+                    </div>
+                    <span class="progress-time" id="np-duration">0:00</span>
+                </div>
+            </div>
+            <div class="np-right">
+                <div class="volume-wrap">
+                    <button class="np-btn" id="np-vol-btn" style="width:28px;height:28px;font-size:.7rem">🔊</button>
+                    <input type="range" class="volume-slider" id="np-volume" min="0" max="1" step="0.01" value="1">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close">✕</button>
+        <img src="" alt="">
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer" id="footer">
+        <p class="footer-text">
+            <span class="accent">wase</span> // UNDERGND — © 2025
+        </p>
+    </footer>
+
+    <!-- TOAST -->
+    <div class="toast-container"></div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        function copyEmail() {
+            const email = "umutcankiyar@gmail.com";
+            const linkElement = document.getElementById('email-copy');
+
+            // Panoya kopyalama işlemi
+            navigator.clipboard.writeText(email).then(() => {
+                // Kullanıcıya geri bildirim veriyoruz
+                const originalText = "✉ " + email;
+                linkElement.innerText = "✓ Kopyalandı";
+
+                // 2 saniye sonra eski haline geri dönsün
+                setTimeout(() => {
+                    linkElement.innerText = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Kopyalama başarısız:', err);
+            });
+        }
+    </script>
+</body>
+
+</html>
