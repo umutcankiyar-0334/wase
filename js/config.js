@@ -121,10 +121,44 @@ function showLoading(container) {
  * @param {string} message — Mesaj
  */
 function showEmpty(container, message = 'Henüz içerik yok') {
+  if (!container) return;
   container.innerHTML = `
     <div class="empty-state">
       <div class="empty-state-icon">∅</div>
       <div class="empty-state-text">${message}</div>
     </div>
   `;
+}
+
+/**
+ * Genel içerik görüntüleme modalını açar
+ * @param {string} title — Modal başlığı
+ * @param {string} content — Modal içeriği
+ */
+function openViewModal(title, content) {
+  const modal = document.getElementById('view-modal');
+  const titleEl = document.getElementById('view-modal-title');
+  const bodyEl = document.getElementById('view-modal-body');
+
+  if (modal && titleEl && bodyEl) {
+    titleEl.textContent = title;
+    bodyEl.innerHTML = `<div class="view-content-box">${content}</div>`;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  } else {
+    console.error('View modal elements not found');
+    // Fallback for missing modal
+    alert(title + "\n\n" + content);
+  }
+}
+
+/**
+ * Genel içerik görüntüleme modalını kapatır
+ */
+function closeViewModal() {
+  const modal = document.getElementById('view-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
 }

@@ -7,6 +7,7 @@ const pages = ['home', 'music', 'gallery', 'notes', 'about'];
 let currentPage = 'home';
 let loadedPages = {};
 let trackCache = {};       // id -> track data
+let imageCache = {};       // id -> image data
 let currentAudio = null;
 let currentTrackEl = null;
 let currentTrackId = null;
@@ -35,6 +36,10 @@ function handleRoute() {
     const navLinks = document.getElementById('nav-links');
     if (hamburger) hamburger.classList.remove('active');
     if (navLinks) navLinks.classList.remove('open');
+
+    // Reset all expanded content when navigating
+    document.querySelectorAll('.is-expanded').forEach(el => el.classList.remove('is-expanded'));
+    document.querySelectorAll('.expand-btn').forEach(btn => btn.textContent = 'Devamını Oku');
 
     window.scrollTo(0, 0);
     currentPage = page;
@@ -65,7 +70,10 @@ async function loadHomeData() {
 
     const { data: id } = await supabase.from('images').select('*').order('created_at', { ascending: false }).limit(4);
     const ic = document.getElementById('latest-images');
-    if (id && id.length > 0) { ic.innerHTML = id.map(i => galleryHTML(i)).join(''); }
+    if (id && id.length > 0) {
+        id.forEach(img => { imageCache[img.id] = img; });
+        ic.innerHTML = id.map(i => galleryHTML(i)).join('');
+    }
     else { showEmpty(ic, 'Henüz görsel eklenmemiş'); }
 
     const { data: nd } = await supabase.from('notes').select('*').order('created_at', { ascending: false }).limit(3);
@@ -86,6 +94,7 @@ async function loadGalleryPage() {
     const c = document.getElementById('all-images');
     const { data, error } = await supabase.from('images').select('*').order('created_at', { ascending: false });
     if (error || !data || data.length === 0) { showEmpty(c, 'Henüz görsel eklenmemiş'); return; }
+    data.forEach(img => { imageCache[img.id] = img; });
     c.innerHTML = data.map(i => galleryHTML(i)).join('');
 }
 
@@ -114,6 +123,7 @@ async function loadAboutPage() {
 
 // ---- HTML TEMPLATES ----
 function escAttr(s) { return s ? s.replace(/'/g, "\\'").replace(/"/g, '&quot;') : ''; }
+function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function trackHTML(t) {
     return `<div class="track-item" id="track-${t.id}">
@@ -122,28 +132,47 @@ function trackHTML(t) {
     </div>
     <div class="track-info">
       <div class="track-title-wrapper" onclick="openTrackDetail('${t.id}')">
-        <div class="track-title">${t.title}</div>
-        <div class="track-genre">${t.genre || ''}</div>
+        <div class="track-title">${escHtml(t.title)}</div>
+        <div class="track-genre">${escHtml(t.genre) || ''}</div>
       </div>
     </div>
     <span class="track-bpm">${t.bpm ? t.bpm + ' BPM' : ''}</span>
-    <button class="track-play-btn" onclick="event.stopPropagation();playTrackOnly('${t.id}')">▶</button>
+    <button class="track-play-btn" onclick="event.stopPropagation();playTrackOnly('${t.id}')"><span class="icon-play"></span></button>
   </div>`;
 }
 
 function galleryHTML(i) {
-    return `<div class="gallery-item" onclick="openLightbox('${escAttr(i.image_url)}')">
-    <img src="${i.image_url}" alt="${escAttr(i.title)}" loading="lazy">
-    <div class="gallery-overlay"><div class="gallery-overlay-title">${i.title}</div><div class="gallery-overlay-desc">${i.description || ''}</div></div>
+    const desc = escHtml(i.description || '').replace(/\n/g, '<br>');
+    const hasLongDesc = desc.length > 80;
+    return `<div class="gallery-item">
+    <div class="gallery-item-img-wrap" onclick="openLightbox('${i.id}')">
+      <img src="${i.image_url}" alt="${escAttr(i.title)}" loading="lazy">
+    </div>
+    <div class="gallery-item-body">
+      <div class="gallery-item-title">${escHtml(i.title)}</div>
+      ${desc ? `<div class="gallery-item-desc">${desc}</div>` : ''}
+      ${hasLongDesc ? `<button class="expand-btn" onclick="toggleExpand(this)">Devamını Oku</button>` : ''}
+    </div>
   </div>`;
 }
 
 function noteHTML(n) {
+    const content = escHtml(n.content || '').replace(/\n/g, '<br>');
+    const hasLong = content.length > 150;
     return `<div class="note-card">
     <div class="note-date">${formatDate(n.created_at)}</div>
-    <div class="note-title">${n.title}</div>
-    <div class="note-content">${n.content || ''}</div>
+    <div class="note-title">${escHtml(n.title)}</div>
+    <div class="note-content">${content}</div>
+    ${hasLong ? `<button class="expand-btn" onclick="toggleExpand(this)">Devamını Oku</button>` : ''}
   </div>`;
+}
+
+// ---- EXPAND / COLLAPSE ----
+function toggleExpand(btn) {
+    const el = btn.previousElementSibling;
+    if (!el) return;
+    const isExpanded = el.classList.toggle('is-expanded');
+    btn.textContent = isExpanded ? 'Küçült' : 'Devamını Oku';
 }
 
 // ---- TIME FORMAT ----
@@ -180,7 +209,6 @@ function generateWaveformBars() {
 
 async function openTrackDetail(id, autoplay = true) {
     let t = trackCache[id];
-    // If not cached, fetch from DB
     if (!t) {
         const { data } = await supabase.from('musics').select('*').eq('id', id).single();
         if (!data) { showToast('Parça bulunamadı', 'error'); return; }
@@ -194,7 +222,6 @@ async function openTrackDetail(id, autoplay = true) {
     const titleEl = document.getElementById('tm-title-text');
     const metaEl = document.getElementById('tm-meta-text');
 
-    // Set content
     bg.style.backgroundImage = `url('${t.cover_url || ''}')`;
     coverImg.src = t.cover_url || '';
     titleEl.textContent = t.title;
@@ -204,19 +231,15 @@ async function openTrackDetail(id, autoplay = true) {
     if (t.bpm) metaParts.push(t.bpm + ' BPM');
     metaEl.innerHTML = metaParts.join('<span class="tm-meta-dot"></span>');
 
-    // Generate waveform
     generateWaveformBars();
 
-    // Open modal
     modal.classList.remove('closing');
     modal.classList.add('active');
     isModalOpen = true;
     document.body.style.overflow = 'hidden';
 
-    // Hide mini-player while modal is open
     nowPlayingBar.classList.remove('active');
 
-    // Start playing (or just load if autoplay is false)
     startAudio(t, document.getElementById('track-' + id), true, autoplay);
     if (autoplay) coverImg.classList.add('playing-anim');
 }
@@ -228,7 +251,6 @@ function closeTrackDetail() {
     document.body.style.overflow = '';
     document.getElementById('tm-cover-img').classList.remove('playing-anim');
 
-    // Stop audio completely
     if (currentAudio) {
         currentAudio.pause();
         currentAudio.src = '';
@@ -238,7 +260,6 @@ function closeTrackDetail() {
     currentTrackEl = null;
     currentTrackId = null;
 
-    // Hide mini-player too
     nowPlayingBar.classList.remove('active');
 
     setTimeout(() => {
@@ -253,7 +274,6 @@ function minimizeTrackDetail() {
     document.body.style.overflow = '';
     document.getElementById('tm-cover-img').classList.remove('playing-anim');
 
-    // Show mini-player, keep music playing
     if (currentAudio && !currentAudio.paused) {
         nowPlayingBar.classList.add('active');
     }
@@ -268,10 +288,10 @@ function copyTrackLink(id) {
     const btn = document.getElementById('tm-share');
     navigator.clipboard.writeText(url).then(() => {
         btn.classList.add('copied');
-        btn.innerHTML = '✓ Kopyalandı';
+        btn.textContent = '✓ Kopyalandı';
         setTimeout(() => {
             btn.classList.remove('copied');
-            btn.innerHTML = '🔗 Bağlantıyı Kopyala';
+            btn.textContent = 'Bağlantıyı Kopyala';
         }, 2000);
     }).catch(() => { showToast('Kopyalanamadı', 'error'); });
 }
@@ -342,11 +362,9 @@ function startAudio(track, trackEl, openModal, autoplay = true) {
         const pct = (currentAudio.currentTime / currentAudio.duration) * 100;
         const curTime = formatTime(currentAudio.currentTime);
 
-        // Mini-player
         if (npFill) npFill.style.width = pct + '%';
         if (npCurrent) npCurrent.textContent = curTime;
 
-        // Modal
         const tmFill = document.getElementById('tm-prog-fill');
         const tmCur = document.getElementById('tm-cur');
         if (tmFill) tmFill.style.width = pct + '%';
@@ -376,22 +394,35 @@ function startAudio(track, trackEl, openModal, autoplay = true) {
     });
 }
 
+// ---- PLAY STATE SYNC (CSS icons instead of emoji) ----
 function syncPlayState(playing) {
     const npPP = document.getElementById('np-play-pause');
     const tmPP = document.getElementById('tm-play');
     const wf = document.getElementById('tm-waveform');
     const coverImg = document.getElementById('tm-cover-img');
 
-    if (npPP) npPP.textContent = playing ? '⏸' : '▶';
-    if (tmPP) tmPP.textContent = playing ? '⏸' : '▶';
+    // Mini-player: swap CSS icon
+    if (npPP) npPP.innerHTML = playing ? '<span class="icon-pause"></span>' : '<span class="icon-play"></span>';
+    // Modal: swap CSS icon
+    if (tmPP) tmPP.innerHTML = playing ? '<span class="icon-pause" style="width:14px;height:18px"></span>' : '<span class="icon-play" style="border-width:10px 0 10px 16px"></span>';
     if (wf) wf.classList.toggle('paused', !playing);
     if (coverImg) coverImg.classList.toggle('playing-anim', playing);
 }
 
 // ---- LIGHTBOX ----
-function openLightbox(url) {
+function openLightbox(id) {
+    const img = imageCache[id];
+    if (!img) return;
+
     const lb = document.getElementById('lightbox');
-    lb.querySelector('img').src = url;
+    const lbImg = document.getElementById('lb-img');
+    const lbTitle = document.getElementById('lb-title');
+    const lbDesc = document.getElementById('lb-desc');
+
+    lbImg.src = img.image_url;
+    lbTitle.textContent = img.title;
+    lbDesc.innerHTML = (img.description || '').replace(/\n/g, '<br>');
+
     lb.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -414,7 +445,6 @@ async function checkTrackParam() {
     const params = new URLSearchParams(window.location.search);
     const trackId = params.get('track');
     if (!trackId) return;
-    // Small delay to let page initialize
     setTimeout(() => { openTrackDetail(trackId, false); }, 600);
 }
 
@@ -467,29 +497,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Volume
+    // Volume — CSS icon swap
     const volSlider = document.getElementById('np-volume');
     const volBtn = document.getElementById('np-vol-btn');
     if (volSlider) volSlider.addEventListener('input', () => {
-        const val = parseFloat(volSlider.value);
-        if (currentAudio) currentAudio.volume = val;
-        if (volBtn) {
-            volBtn.classList.toggle('muted', val === 0);
-        }
+        if (currentAudio) currentAudio.volume = parseFloat(volSlider.value);
+        if (volBtn) volBtn.innerHTML = parseFloat(volSlider.value) === 0 ? '<span class="icon-vol-off"></span>' : '<span class="icon-vol-on"></span>';
     });
-
     if (volBtn) volBtn.addEventListener('click', () => {
         if (!currentAudio) return;
         if (currentAudio.volume > 0) {
             volBtn.dataset.prev = currentAudio.volume;
-            currentAudio.volume = 0;
-            volSlider.value = 0;
-            volBtn.classList.add('muted');
+            currentAudio.volume = 0; volSlider.value = 0;
+            volBtn.innerHTML = '<span class="icon-vol-off"></span>';
         } else {
-            const prev = parseFloat(volBtn.dataset.prev || 1);
-            currentAudio.volume = prev;
-            volSlider.value = prev;
-            volBtn.classList.remove('muted');
+            currentAudio.volume = parseFloat(volBtn.dataset.prev || 1);
+            volSlider.value = currentAudio.volume;
+            volBtn.innerHTML = '<span class="icon-vol-on"></span>';
         }
     });
 

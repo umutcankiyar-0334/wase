@@ -87,8 +87,8 @@
                 <div class="container">
                     <div class="section-header">
                         <span class="section-tag">// Müzik Arşivi</span>
-
-
+                        <h1 class="section-title">Tüm Parçalar</h1>
+                        <p class="section-desc">Karanlıktan süzülen sesler. Çal, hisset, kaybol.</p>
                     </div>
                     <div class="spotify-bar">
                         <span class="spotify-bar-text">🎧 Benim Dinlediklerim</span>
@@ -112,8 +112,8 @@
                 <div class="container">
                     <div class="section-header">
                         <span class="section-tag">// Görsel Arşiv</span>
-
-
+                        <h1 class="section-title">Galeri</h1>
+                        <p class="section-desc">Her kare bir hikaye anlatır. Karanlık tonlar, ham duygular.</p>
                     </div>
                     <div class="gallery-grid" id="all-images">
                         <div class="loading-spinner">
@@ -132,8 +132,8 @@
                 <div class="container">
                     <div class="section-header">
                         <span class="section-tag">// Düşünceler</span>
-
-
+                        <h1 class="section-title">Notlar</h1>
+                        <p class="section-desc">Filtresiz düşünceler, ham fikirler, yeraltından satırlar.</p>
                     </div>
                     <div class="notes-grid" id="all-notes">
                         <div class="loading-spinner">
@@ -209,7 +209,7 @@
                 <span class="np-title" id="np-title">—</span>
             </div>
             <div class="np-center">
-                <button class="np-btn" id="np-play-pause">⏸</button>
+                <button class="np-btn np-pp-btn" id="np-play-pause"><span class="icon-pause"></span></button>
                 <div class="progress-wrap">
                     <span class="progress-time" id="np-current">0:00</span>
                     <div class="progress-bar" id="np-progress">
@@ -220,9 +220,7 @@
             </div>
             <div class="np-right">
                 <div class="volume-wrap">
-                    <button class="np-btn" id="np-vol-btn" style="width:28px;height:28px;">
-                        <span class="vol-icon"></span>
-                    </button>
+                    <button class="np-btn vol-toggle" id="np-vol-btn"><span class="icon-vol-on"></span></button>
                     <input type="range" class="volume-slider" id="np-volume" min="0" max="1" step="0.01" value="1">
                 </div>
             </div>
@@ -260,7 +258,13 @@
     <!-- LIGHTBOX -->
     <div class="lightbox" id="lightbox">
         <button class="lightbox-close">✕</button>
-        <img src="" alt="">
+        <div class="lightbox-content">
+            <img src="" alt="" id="lb-img">
+            <div class="lightbox-info" id="lb-info">
+                <div class="lightbox-title" id="lb-title"></div>
+                <div class="lightbox-desc" id="lb-desc"></div>
+            </div>
+        </div>
     </div>
 
     <!-- FOOTER -->

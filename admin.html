@@ -83,19 +83,23 @@
                                     📷 Kapak Görseli Seç
                                 </label>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Ses Dosyası *</label>
-                                <input class="form-file" type="file" id="music-audio" accept="audio/*" required>
-                                <label class="form-file-label" for="music-audio" id="music-audio-label">
-                                    🎵 Ses Dosyası Seç
-                                </label>
-                            </div>
+                            <label class="form-label">Ses Dosyası *</label>
+                            <input class="form-file" type="file" id="music-audio"
+                                accept=".mp3,.m4a,audio/mpeg,audio/mp4" required>
+                            <label class="form-file-label" for="music-audio" id="music-audio-label">
+                                🎵 Ses Dosyası Seç (MP3/M4A)
+                            </label>
                         </div>
                         <button class="btn btn-primary" type="submit" id="music-submit">Müzik Ekle</button>
                     </form>
                 </div>
 
                 <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Mevcut Müzikler</h3>
+                <div class="admin-search-wrap">
+                    <span class="admin-search-icon">🔍</span>
+                    <input type="text" class="admin-search-input" placeholder="Müzik ara..."
+                        oninput="filterAdminList('music', this.value)">
+                </div>
                 <div id="music-table-wrapper">
                     <table class="data-table">
                         <thead>
@@ -140,6 +144,11 @@
                 </div>
 
                 <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Mevcut Görseller</h3>
+                <div class="admin-search-wrap">
+                    <span class="admin-search-icon">🔍</span>
+                    <input type="text" class="admin-search-input" placeholder="Görsel ara..."
+                        oninput="filterAdminList('images', this.value)">
+                </div>
                 <div id="images-table-wrapper">
                     <table class="data-table">
                         <thead>
@@ -175,6 +184,11 @@
                 </div>
 
                 <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Mevcut Notlar</h3>
+                <div class="admin-search-wrap">
+                    <span class="admin-search-icon">🔍</span>
+                    <input type="text" class="admin-search-input" placeholder="Not ara..."
+                        oninput="filterAdminList('notes', this.value)">
+                </div>
                 <div id="notes-table-wrapper">
                     <table class="data-table">
                         <thead>
@@ -190,6 +204,42 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ===== GENEL DÜZENLEME MODALI ===== -->
+    <div class="modal" id="edit-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">İçeriği Düzenle</h3>
+                <button class="modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <input type="hidden" id="edit-type">
+
+                <div id="edit-fields">
+                    <!-- Dinamik olarak dolacak -->
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="edit-submit">Değişiklikleri Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== İÇERİK GÖRÜNTÜLEME MODALI (Okunabilirlik İçin) ===== -->
+    <div class="modal" id="view-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="view-modal-title">Görünüm</h3>
+                <button class="modal-close" onclick="closeViewModal()">✕</button>
+            </div>
+            <div class="modal-body" id="view-modal-body">
+                <!-- İçerik buraya gelecek -->
+            </div>
         </div>
     </div>
 
@@ -256,6 +306,19 @@
             document.getElementById('music-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const submitBtn = document.getElementById('music-submit');
+
+                // Ses dosyası doğrulama
+                const audioFile = document.getElementById('music-audio').files[0];
+                const audioErr = validateAudioFile(audioFile);
+                if (audioErr) { showToast(audioErr, 'error'); return; }
+
+                // Kapak görseli doğrulama (seçildiyse)
+                const coverFile = document.getElementById('music-cover').files[0];
+                if (coverFile) {
+                    const coverErr = await validateImageFile(coverFile);
+                    if (coverErr) { showToast(coverErr, 'error'); return; }
+                }
+
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Yükleniyor...';
 
@@ -263,15 +326,15 @@
                     title: document.getElementById('music-title').value,
                     genre: document.getElementById('music-genre').value,
                     bpm: document.getElementById('music-bpm').value,
-                    coverFile: document.getElementById('music-cover').files[0],
-                    audioFile: document.getElementById('music-audio').files[0]
+                    coverFile: coverFile,
+                    audioFile: audioFile
                 });
 
                 e.target.reset();
                 document.getElementById('music-cover-label').textContent = '📷 Kapak Görseli Seç';
                 document.getElementById('music-cover-label').style.borderColor = '';
                 document.getElementById('music-cover-label').style.color = '';
-                document.getElementById('music-audio-label').textContent = '🎵 Ses Dosyası Seç';
+                document.getElementById('music-audio-label').textContent = '🎵 Ses Dosyası Seç (MP3/M4A)';
                 document.getElementById('music-audio-label').style.borderColor = '';
                 document.getElementById('music-audio-label').style.color = '';
                 submitBtn.disabled = false;
@@ -282,13 +345,19 @@
             document.getElementById('image-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const submitBtn = document.getElementById('image-submit');
+
+                // Görsel doğrulama
+                const imageFile = document.getElementById('image-file').files[0];
+                const imgErr = await validateImageFile(imageFile);
+                if (imgErr) { showToast(imgErr, 'error'); return; }
+
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Yükleniyor...';
 
                 await addImage({
                     title: document.getElementById('image-title').value,
                     description: document.getElementById('image-desc').value,
-                    imageFile: document.getElementById('image-file').files[0]
+                    imageFile: imageFile
                 });
 
                 e.target.reset();
